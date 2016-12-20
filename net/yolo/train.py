@@ -5,6 +5,7 @@ from misc import show
 import numpy as np
 import os
 
+
 def loss(self, net_out):
     """
     Takes net.out and placeholders value
@@ -18,7 +19,7 @@ def loss(self, net_out):
     snoob = float(m['noobject_scale'])
     scoor = float(m['coord_scale'])
     S, B, C = m['side'], m['num'], m['classes']
-    SS = S * S # number of grid cells
+    SS = S * S  # number of grid cells
 
     print '{} loss hyper-parameters:'.format(m['model'])
     print '\tside    = {}'.format(m['side'])
@@ -41,26 +42,26 @@ def loss(self, net_out):
     _botright = tf.placeholder(tf.float32, size2 + [2])
 
     self.placeholders = {
-        'probs':_probs, 'confs':_confs, 'coord':_coord, 'proid':_proid,
-        'areas':_areas, 'upleft':_upleft, 'botright':_botright
+        'probs': _probs, 'confs': _confs, 'coord': _coord, 'proid': _proid,
+        'areas': _areas, 'upleft': _upleft, 'botright': _botright
     }
 
     # Extract the coordinate prediction from net.out
     coords = net_out[:, SS * (C + B):]
     coords = tf.reshape(coords, [-1, SS, B, 4])
-    wh = tf.pow(coords[:,:,:,2:4], 2) * S # unit: grid cell
-    area_pred = wh[:,:,:,0] * wh[:,:,:,1] # unit: grid cell^2 
-    centers = coords[:,:,:,0:2] # [batch, SS, B, 2]
-    floor = centers - (wh * .5) # [batch, SS, B, 2]
-    ceil  = centers + (wh * .5) # [batch, SS, B, 2]
+    wh = tf.pow(coords[:, :, :, 2:4], 2) * S  # unit: grid cell
+    area_pred = wh[:, :, :, 0] * wh[:, :, :, 1]  # unit: grid cell^2
+    centers = coords[:, :, :, 0:2]  # [batch, SS, B, 2]
+    floor = centers - (wh * .5)  # [batch, SS, B, 2]
+    ceil = centers + (wh * .5)  # [batch, SS, B, 2]
 
     # calculate the intersection areas
-    intersect_upleft   = tf.maximum(floor, _upleft) 
-    intersect_botright = tf.minimum(ceil , _botright)
+    intersect_upleft = tf.maximum(floor, _upleft)
+    intersect_botright = tf.minimum(ceil, _botright)
     intersect_wh = intersect_botright - intersect_upleft
     intersect_wh = tf.maximum(intersect_wh, 0.0)
-    intersect = tf.mul(intersect_wh[:,:,:,0], intersect_wh[:,:,:,1])
-    
+    intersect = tf.mul(intersect_wh[:, :, :, 0], intersect_wh[:, :, :, 1])
+
     # calculate the best IOU, set 0.0 confidence for worse boxes
     iou = tf.truediv(intersect, _areas + area_pred - intersect)
     best_box = tf.equal(iou, tf.reduce_max(iou, [2], True))

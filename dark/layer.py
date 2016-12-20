@@ -1,18 +1,18 @@
 from utils import loader
 import numpy as np
 
-class Layer(object):
 
+class Layer(object):
     def __init__(self, *args):
         self._signature = list(args)
         self.type = list(args)[0]
         self.number = list(args)[1]
 
-        self.w = dict() # weights
-        self.h = dict() # placeholders
-        self.wshape = dict() # weight shape
-        self.wsize = dict() # weight size
-        self.setup(*args[2:]) # set attr up
+        self.w = dict()  # weights
+        self.h = dict()  # placeholders
+        self.wshape = dict()  # weight shape
+        self.wsize = dict()  # weight size
+        self.setup(*args[2:])  # set attr up
         self.present()
         for var in self.wshape:
             shp = self.wshape[var]
@@ -26,15 +26,17 @@ class Layer(object):
         src_type = type(src_loader)
         if src_type is loader.weights_loader:
             wdict = self.load_weights(src_loader)
-        else: 
+        else:
             wdict = self.load_ckpt(src_loader)
         if wdict is not None:
             self.recollect(wdict)
 
     def load_weights(self, src_loader):
         val = src_loader([self.presenter])
-        if val is None: return None
-        else: return val.w
+        if val is None:
+            return None
+        else:
+            return val.w
 
     def load_ckpt(self, src_loader):
         result = dict()
@@ -54,6 +56,7 @@ class Layer(object):
     # For comparing two layers
     def __eq__(self, other):
         return self.signature == other.signature
+
     def __ne__(self, other):
         return not self.__eq__(other)
 
@@ -65,7 +68,14 @@ class Layer(object):
         sig += '/' + var
         return sig
 
-    def recollect(self, w): self.w = w
-    def present(self): self.presenter = self
-    def setup(self, *args): pass
-    def finalize(self): pass 
+    def recollect(self, w):
+        self.w = w
+
+    def present(self):
+        self.presenter = self
+
+    def setup(self, *args):
+        pass
+
+    def finalize(self):
+        pass

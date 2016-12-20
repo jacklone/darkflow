@@ -20,7 +20,7 @@ flags.DEFINE_string("load", "", "how to initialize the net? Either from .weights
 flags.DEFINE_boolean("savepb", False, "save net and weight to a .pb file")
 flags.DEFINE_float("gpu", 0.0, "how much gpu (from 0.0 to 1.0)")
 flags.DEFINE_float("lr", 1e-5, "learning rate")
-flags.DEFINE_integer("keep",20,"Number of most recent training results to save")
+flags.DEFINE_integer("keep", 20, "Number of most recent training results to save")
 flags.DEFINE_integer("batch", 12, "batch size")
 flags.DEFINE_integer("epoch", 1000, "number of epoch")
 flags.DEFINE_integer("save", 2000, "save checkpoint every ? training examples")
@@ -28,33 +28,40 @@ flags.DEFINE_string("demo", '', "demo on webcam")
 flags.DEFINE_boolean("profile", False, "profile")
 FLAGS = flags.FLAGS
 
+
 # make sure all necessary dirs exist
 def get_dir(dirs):
-	for d in dirs:
-		this = os.path.abspath(os.path.join(os.path.curdir, d))
-		if not os.path.exists(this): os.makedirs(this)
-get_dir([FLAGS.test, FLAGS.binary, FLAGS.backup, os.path.join(FLAGS.test,'out')])
+    for d in dirs:
+        this = os.path.abspath(os.path.join(os.path.curdir, d))
+        if not os.path.exists(this): os.makedirs(this)
+
+
+get_dir([FLAGS.test, FLAGS.binary, FLAGS.backup, os.path.join(FLAGS.test, 'out')])
 
 # fix FLAGS.load to appropriate type
-try: FLAGS.load = int(FLAGS.load)
-except: pass
+try:
+    FLAGS.load = int(FLAGS.load)
+except:
+    pass
 
 tfnet = TFNet(FLAGS)
 
 if FLAGS.profile:
-	tfnet.framework.profile(tfnet)
-	exit()
+    tfnet.framework.profile(tfnet)
+    exit()
 
 if FLAGS.demo:
-	tfnet.camera(FLAGS.demo)
-	exit()
+    tfnet.camera(FLAGS.demo)
+    exit()
 
 if FLAGS.train:
-	print 'Enter training ...';	tfnet.train()
-	if not FLAGS.savepb: exit('Training finished')
+    print 'Enter training ...';
+    tfnet.train()
+    if not FLAGS.savepb: exit('Training finished')
 
 if FLAGS.savepb:
-	print 'Rebuild a constant version ...'
-	tfnet.savepb(); exit('Done')
+    print 'Rebuild a constant version ...'
+    tfnet.savepb();
+    exit('Done')
 
 tfnet.predict()

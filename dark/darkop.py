@@ -2,11 +2,14 @@ from layer import Layer
 from convolution import *
 from connected import *
 
+
 class avgpool_layer(Layer):
     pass
 
+
 class crop_layer(Layer):
     pass
+
 
 class maxpool_layer(Layer):
     def setup(self, ksize, stride, pad):
@@ -14,25 +17,30 @@ class maxpool_layer(Layer):
         self.ksize = ksize
         self.pad = pad
 
+
 class softmax_layer(Layer):
     def setup(self, groups):
         self.groups = groups
 
+
 class dropout_layer(Layer):
     def setup(self, p):
         self.h['pdrop'] = dict({
-            'feed': p, # for training
-            'dfault': 1.0, # for testing
+            'feed': p,  # for training
+            'dfault': 1.0,  # for testing
             'shape': ()
         })
+
 
 class route_layer(Layer):
     def setup(self, routes):
         self.routes = routes
 
+
 class reorg_layer(Layer):
     def setup(self, stride):
         self.stride = stride
+
 
 """
 Darkop Factory
@@ -55,7 +63,8 @@ darkops = {
     'extract': extract_layer
 }
 
+
 def create_darkop(ltype, num, *args):
     op_class = darkops.get(ltype, Layer)
-    #print ltype, len(args)
+    # print ltype, len(args)
     return op_class(ltype, num, *args)
