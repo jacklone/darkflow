@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="vsearch-demo">
+    <meta name="author" content="TTS (http:taotaosou.com/)">
+
+    <title>图像分割&识别Demo</title>
+
+    <!--<link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">-->
+    <!--<script type="text/javascript" src="//code.jquery.com/jquery-2.1.1.js"></script>-->
+    <!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>-->
+
+    <link href="{{url_for('static', filename='css/bootstrap.min.css')}}" rel="stylesheet">
+    <script type="text/javascript" src="{{url_for('static', filename='js/jquery-2.1.1.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+
+    <!-- Script to instantly classify an image once it is uploaded. -->
+    <script type="text/javascript">
+        $(document).ready(
+                function () {
+                    $('#classifyfile').attr('disabled', true);
+                    $('#imagefile').change(
+                            function () {
+                                if ($(this).val()) {
+                                    $('#formupload').submit();
+                                }
+                            }
+                    );
+                }
+        );
+
+    </script>
+
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            line-height: 1.5em;
+            color: #232323;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3 {
+            font-family: Times, serif;
+            line-height: 1.5em;
+            border-bottom: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+<!-- Begin page content -->
+<div class="container">
+
+    <div>
+        <h1><a href="/">图像分割&识别Demo</a></h1>
+    </div>
+
+    <div>
+        <!-- Click for a Quick Example -->
+        <a href="/submit?url=https://g-search3.alicdn.com/img/bao/uploaded/i4/i3/TB12WwmNpXXXXaiXFXXXXXXXXXX_!!0-item_pic.jpg_230x230.jpg">示例
+        </a>
+
+        <a href="/about" target="view_window"><p align="right"> 关于算法 </p></a>
+
+        <!-- Provide an image URL -->
+        <form role="form" action="submit" method="get">
+            <div class="form-group">
+                <div class="input-group">
+                    <span class="input-group-addon">Category</span>
+                    <input type="text" class="form-control" name="cat" id="cat"
+                           placeholder="provide a product category, search in all categories if no input">
+                    <span class="input-group-addon">Type</span>
+                    <input type="text" class="form-control" name="stype" id="stype"
+                           placeholder="search type: 0-all; 1-img; 2-color">
+                </div>
+                <div class="input-group">
+                    <input type="text" class="form-control" name="url" id="url"
+                           placeholder="provide an image url">
+                    <span class="input-group-btn">
+                        <input class="btn btn-primary" value="Submit Url" type="submit" id="submit"></input>
+                    </span>
+                </div><!-- /input-group -->
+            </div>
+        </form>
+
+    </div>
+
+    <div>
+        {% if has_result %}
+
+            <div class="media">
+                <div>
+                    <!-- search for -->
+                    {% if search_for[0]  %}
+                        <p><font size="5"> Search for: </font></p>
+                        {% set hit=search_for[1] %}
+                        {% set url=search_for[1].src %}
+                        <a class="pull-left" href={{ hit.href }} target="view_window"><img
+                                class="media-object" width="220"
+                                height="220"
+                                src={{ hit.src }}>
+                        </a>
+
+
+                        <!-- for evaluate -->
+                        {% if not stupid is defined or stupid < 0 %}
+                            <a href="/submit?url={{ url }}&stupid=0" class="btn btn-info btn-lg">
+                                <span class="glyphicon glyphicon-thumbs-up"></span> Well Done
+                            </a>
+                            <a href="/submit?url={{ url }}&stupid=1" class="btn btn-info btn-lg">
+                                <span class="glyphicon glyphicon-pushpin"></span> So So
+                            </a>
+                            <a href="/submit?url={{ url }}&stupid=2" class="btn btn-info btn-lg">
+                                <span class="glyphicon glyphicon-thumbs-down"></span> Stupid
+                            </a>
+                            <!-- avoid for voting twice -->
+                        {% elif stupid == 0 %}
+                            <a class="btn btn-info btn-lg">
+                                <span class="glyphicon glyphicon-thumbs-up"></span> Well Done
+                            </a>
+                        {% elif stupid == 1 %}
+                            <a class="btn btn-info btn-lg">
+                                <span class="glyphicon glyphicon-pushpin"></span> So So
+                            </a>
+                        {% elif stupid == 2 %}
+                            <a class="btn btn-info btn-lg">
+                                <span class="glyphicon glyphicon-thumbs-down"></span> Stupid
+                        </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <hr>
+                <!-- 评价注释 -->
+                {% if not stupid is defined or stupid < 0 %}
+                <div>
+                    <p class="text-danger" style="text-indent: 3%;font-size: large;"> 请投下您宝贵的一票! </p>
+                </div>
+                {% else %}
+                <div>
+                    <p class="text-danger" style="text-indent: 3%;font-size: large;"> 谢谢您的反馈! </p>
+                    {% if status is defined %}
+                    <p class="text-warning" style="text-indent: 3%;font-size: large;">
+                        <font>Well Done: </font>
+                        <font color="#00ced1"> {{ status[0] }}</font>
+                    </p>
+                    <p class="text-warning" style="text-indent: 3%;font-size: large;">
+                        <font>SoSo: </font>
+                        <font color="#006400"> {{ status[1] }}</font>
+                    </p>
+                    <p class="text-warning" style="text-indent: 3%;font-size: large;">
+                        <font>Stupid: </font>
+                        <font color="#ff1493"> {{ status[2] }} </font>
+                    </p>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- similar img -->
+                <div style="overflow:hidden;clear:both">
+                    <hr>
+                    <p><font size="5"> Segment Result: </font></p>
+                    {% for hit in similar %}
+                        <div class="media-body pull-left" style="border:1px solid #ededed;margin:0 10px 10px 0">
+                            <a href="https:{{ hit.href }}" target="view_window">
+                                <img class="pure-img" src="{{ hit.src }}" style="width:480px;height:480px"/>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <hr>
+    <div id="footer">
+        <div class="container">
+            <p>&copy; Taotaosou 2016</p>
+        </div>
+    </div>
+</body>
+</html>
