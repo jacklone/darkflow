@@ -53,7 +53,7 @@ def load_old_graph(self, ckpt):
     ckpt_loader = create_loader(ckpt)
     self.say(old_graph_msg.format(ckpt))
 
-    for var in tf.all_variables():
+    for var in tf.global_variables():
         name = var.name.split(':')[0]
         args = [name, var.get_shape()]
         val = ckpt_loader(args)
@@ -101,7 +101,7 @@ def camera(self, file):
 def to_darknet(self):
     darknet_ckpt = self.darknet
     with self.graph.as_default() as g:
-        for var in tf.all_variables():
+        for var in tf.global_variables():
             name = var.name.split(':')[0]
             var_name = name.split('-')
             l_idx = int(var_name[0])
